@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { HelloWorld, myCompSchema } from "./HelloWorld";
 import { Logo, myCompSchema2 } from "./HelloWorld/Logo";
+import { TicTacToeComp } from "./TicTacToeComp";
 
 // Each <Composition> is an entry in the sidebar!
 
@@ -40,6 +41,16 @@ export const RemotionRoot: React.FC = () => {
           logoColor1: "#91dAE2" as const,
           logoColor2: "#86A8E7" as const,
         }}
+      />
+
+      {/* Tic Tac Toe interactive composition */}
+      <Composition
+        id="TicTacToe"
+        component={TicTacToeComp}
+        durationInFrames={300}
+        fps={30}
+        width={1080}
+        height={1080}
       />
     </>
   );
