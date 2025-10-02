@@ -1,6 +1,7 @@
 import React from "react";
 import { Theme } from "../theme";
 import { Board as BoardType, GameStatus, Player } from "../gameLogic";
+import { KnightIcon, QueenIcon } from "./ChessIcons";
 
 type Props = {
   board: BoardType;
@@ -99,6 +100,10 @@ const markStyle = (mark: Player | null): React.CSSProperties => ({
   color: mark === "X" ? Theme.colors.primary : mark === "O" ? Theme.colors.secondary : Theme.colors.text,
   textShadow: mark ? `0 6px 16px ${mark === "X" ? "#2563EB22" : "#F59E0B22"}` : "none",
   transition: Theme.transitions.base,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: 1,
 });
 
 const toolbarStyle: React.CSSProperties = {
@@ -123,6 +128,10 @@ const srOnly: React.CSSProperties = {
 
 const StatusPill: React.FC<{ status: GameStatus }> = ({ status }) => {
   if (status.type === "turn") {
+    const iconColor = status.player === "X" ? Theme.colors.primary : Theme.colors.secondary;
+    const icon = status.player === "X"
+      ? <KnightIcon size={16} color={iconColor} title="Knight (Player X)" />
+      : <QueenIcon size={16} color={iconColor} title="Queen (Player O)" />;
     return (
       <div
         style={{
@@ -131,15 +140,23 @@ const StatusPill: React.FC<{ status: GameStatus }> = ({ status }) => {
         }}
         aria-live="polite"
       >
-        <span aria-hidden style={statusDot(status.player === "X" ? Theme.colors.primary : Theme.colors.secondary)} />
-        <span>
-          Turn: <strong style={{ color: status.player === "X" ? Theme.colors.primary : Theme.colors.secondary }}>{status.player}</strong>
+        <span aria-hidden style={statusDot(iconColor)} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          Turn:
+          <strong style={{ color: iconColor, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {icon}
+            <span className="sr-only" style={{ position: "absolute", clip: "rect(0,0,0,0)" }}>{status.player}</span>
+          </strong>
         </span>
       </div>
     );
   }
 
   if (status.type === "win") {
+    const iconColor = status.player === "X" ? Theme.colors.primary : Theme.colors.secondary;
+    const icon = status.player === "X"
+      ? <KnightIcon size={16} color={iconColor} title="Knight (Player X)" />
+      : <QueenIcon size={16} color={iconColor} title="Queen (Player O)" />;
     return (
       <div
         style={{
@@ -149,10 +166,13 @@ const StatusPill: React.FC<{ status: GameStatus }> = ({ status }) => {
         }}
         aria-live="polite"
       >
-        <span aria-hidden style={statusDot(status.player === "X" ? Theme.colors.primary : Theme.colors.secondary)} />
-        <span>
-          Winner:{" "}
-          <strong style={{ color: status.player === "X" ? Theme.colors.primary : Theme.colors.secondary }}>{status.player}</strong>
+        <span aria-hidden style={statusDot(iconColor)} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          Winner:
+          <strong style={{ color: iconColor, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {icon}
+            <span className="sr-only" style={{ position: "absolute", clip: "rect(0,0,0,0)" }}>{status.player}</span>
+          </strong>
         </span>
       </div>
     );
@@ -194,17 +214,33 @@ export const Board: React.FC<Props> = ({ board, status, onCellClick }) => {
               ? `linear-gradient(135deg, ${Theme.colors.secondary}22, ${Theme.colors.primary}15)`
               : Theme.colors.surface;
 
-        const finalStyle: React.CSSProperties = {
+          const finalStyle: React.CSSProperties = {
             ...cellBase,
             background: bgGradient,
             borderColor: isWinningCell ? `${Theme.colors.primary}44` : "#E5E7EB",
           };
 
+          // Decide which icon to render based on the cell value
+          const icon =
+            cell === "X" ? (
+              <KnightIcon
+                size="1em"
+                color={Theme.colors.primary}
+                title="Knight (Player X)"
+              />
+            ) : cell === "O" ? (
+              <QueenIcon
+                size="1em"
+                color={Theme.colors.secondary}
+                title="Queen (Player O)"
+              />
+            ) : null;
+
           return (
             <button
               key={idx}
               type="button"
-              aria-label={`Cell ${idx + 1}${cell ? ` containing ${cell}` : ""}`}
+              aria-label={`Cell ${idx + 1}${cell ? ` containing ${cell === "X" ? "Knight (X)" : "Queen (O)"} ` : ""}`}
               onClick={() => !disabled && onCellClick(idx)}
               disabled={disabled}
               style={{
@@ -224,15 +260,15 @@ export const Board: React.FC<Props> = ({ board, status, onCellClick }) => {
                 }
               }}
             >
-              <span aria-hidden style={markStyle(cell)}>{cell ? cell : ""}</span>
+              <span aria-hidden style={markStyle(cell)}>
+                {icon}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div style={toolbarStyle}>
-        {/* Reset button is handled in parent using a ref/callback */}
-      </div>
+      <div style={toolbarStyle}>{/* Reset handled in parent */}</div>
 
       <span style={srOnly} role="status" aria-live="polite">
         {status.type === "turn" && `Turn ${status.player}`}
